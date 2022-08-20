@@ -636,9 +636,18 @@ public class PushAgent extends Spider {
                 case "AliYun":
                     refreshTk();
                     String[] split = id.split("\\+");
-                    String str3 = split[0];
-                    String str5 = split[2];
-                    String url = Proxy.localProxyUrl() + "?do=push&type=m3u8&share_id=" + str3 + "&file_id=" + str5;
+                    //原画画质
+                    String DownloadURL =downloadUrl(split[0],split[1],split[2],split[3]);
+                    HashMap hashMap =new HashMap();
+                    OkHttpUtil.string(DownloadURL,Headers(),hashMap);
+                    String url = location(hashMap);
+                    //切片注释
+                    //String str3 = split[0];
+                   // String str5 = split[2];
+                    //String url = Proxy.localProxyUrl() + "?do=push&type=m3u8&share_id=" + str3 + "&file_id=" + str5;
+                    JSONObject jSONObject4 = new JSONObject();
+                    jSONObject4.put("user-agent","Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.54 Safari/537.36");
+                    jSONObject4.put("referer","https://www.aliyundrive.com");
                     JSONObject jSONObject = new JSONObject();
                     jSONObject.put("parse", "0");
                     jSONObject.put("playUrl", "");
@@ -651,6 +660,51 @@ public class PushAgent extends Spider {
             SpiderDebug.log(e);
         }
         return "";
+    }
+
+    private static String downloadUrl (String str, String str2, String str3, String str4) {
+        try {
+            HashMap<String, String> headers = Headers();
+            headers.put("x-share-token", str2);
+            headers.put("authorization", j);
+            if (str4.equals("video")) {
+                JSONObject jSONObject = new JSONObject();
+                jSONObject.put("share_id", str);
+                jSONObject.put("category", "live_transcoding");
+                jSONObject.put("file_id", str3);
+                jSONObject.put("template_id", "");
+                JSONObject jSONObject2 = new JSONObject(Post("https://api.aliyundrive.com/v2/file/get_share_link_video_preview_play_info", jSONObject.toString(), headers));
+                str = jSONObject2.getString("share_id");
+                str3 = jSONObject2.getString("file_id");
+            }
+            JSONObject jSONObject3 = new JSONObject();
+            if (str4.equals("video")) {
+                jSONObject3.put("expire_sec", 600);
+                jSONObject3.put("file_id", str3);
+                jSONObject3.put("share_id", str);
+            }
+            if (str4.equals("audio")) {
+                jSONObject3.put("share_id", str);
+                jSONObject3.put("get_audio_play_info", true);
+                jSONObject3.put("file_id", str3);
+            }
+            return new JSONObject(Post("https://api.aliyundrive.com/v2/file/get_share_link_download_url", jSONObject3.toString(), headers)).getString("download_url");
+        } catch (Exception e) {
+            SpiderDebug.log(e);
+            return "";
+        }
+    }
+    public static String location (Map<String, List<String>> map) {
+        if (map == null) {
+            return null;
+        }
+        if (map.containsKey("location")) {
+            return map.get("location").get(0);
+        }
+        if (!map.containsKey("Location")) {
+            return null;
+        }
+        return map.get("Location").get(0);
     }
 
 }
