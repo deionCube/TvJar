@@ -638,9 +638,9 @@ public class PushAgent extends Spider {
                     String[] split = id.split("\\+");
                     //原画画质
                     String DownloadURL =downloadUrl(split[0],split[1],split[2],split[3]);
-                    HashMap hashMap =new HashMap();
-                    OkHttpUtil.string(DownloadURL,Headers(),hashMap);
-                    String url = location(hashMap);
+                    Map<String, List<String>> headerMap = new HashMap<>();
+                    OkHttpUtil.string(DownloadURL,Headers(),headerMap);
+                    String url = location(headerMap);
                     //切片注释
                     //String str3 = split[0];
                    // String str5 = split[2];
