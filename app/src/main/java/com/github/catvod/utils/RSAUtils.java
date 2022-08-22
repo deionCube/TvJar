@@ -16,6 +16,7 @@ import java.util.Map;
  * 实现RSA加密算法
  */
 public final class RSAUtils {
+
     /**
      * 加密算法RSA
      */
@@ -336,7 +337,7 @@ public final class RSAUtils {
      */
     public static String decryptDataWithPubKey(String data, String PUBLICKEY) throws Exception {
         byte[] rs = decryptBASE64(data);
-        return new String(decryptByPublicKey(rs, PUBLICKEY), Opslab.UTF_8);
+        return new String(decryptByPublicKey(rs, PUBLICKEY), StandardCharsets.UTF_8);
     }
 
 
@@ -357,7 +358,7 @@ public final class RSAUtils {
      */
     public static String decryptDataWithPriKey(String data, String PRIVATEKEY) throws Exception {
         byte[] rs = decryptBASE64(data);
-        return new String(decryptByPrivateKey(rs, PRIVATEKEY), Opslab.UTF_8);
+        return new String(decryptByPrivateKey(rs, PRIVATEKEY), StandardCharsets.UTF_8);
     }
 
 
