@@ -45,7 +45,7 @@ public class Juhuang extends Spider {
     public void init(Context context) {
         super.init(context);
         try {
-            playerConfig = new JSONObject("{\"xg\":{\"sh\":\"xg������\",\"or\":999,\"sn\":0,\"pu\":\"\"},\"dplayer\":{\"sh\":\"dplayer������\",\"or\":999,\"sn\":0,\"pu\":\"\"},\"videojs\":{\"sh\":\"videojs-H5������\",\"or\":999,\"sn\":0,\"pu\":\"\"},\"iva\":{\"sh\":\"iva-H5������\",\"or\":999,\"sn\":0,\"pu\":\"\"},\"iframe\":{\"sh\":\"iframe��������\",\"or\":999,\"sn\":0,\"pu\":\"\"},\"link\":{\"sh\":\"��������\",\"or\":999,\"sn\":0,\"pu\":\"\"},\"swf\":{\"sh\":\"Flash�ļ�\",\"or\":999,\"sn\":0,\"pu\":\"\"},\"flv\":{\"sh\":\"Flv�ļ�\",\"or\":999,\"sn\":0,\"pu\":\"\"},\"plyr\":{\"sh\":\"plyr\",\"or\":999,\"sn\":0,\"pu\":\"\"},\"H5player\":{\"sh\":\"H5player\",\"or\":999,\"sn\":0,\"pu\":\"\"},\"playerjs\":{\"sh\":\"playerjs\",\"or\":999,\"sn\":0,\"pu\":\"\"},\"aliplayer\":{\"sh\":\"���ﲥ����\",\"or\":999,\"sn\":0,\"pu\":\"\"}}");
+            playerConfig = new JSONObject("{\"xg\":{\"sh\":\"xg播放器\",\"or\":999,\"sn\":0,\"pu\":\"\"},\"dplayer\":{\"sh\":\"dplayer播放器\",\"or\":999,\"sn\":0,\"pu\":\"\"},\"videojs\":{\"sh\":\"videojs-H5播放器\",\"or\":999,\"sn\":0,\"pu\":\"\"},\"iva\":{\"sh\":\"iva-H5播放器\",\"or\":999,\"sn\":0,\"pu\":\"\"},\"iframe\":{\"sh\":\"iframe外链数据\",\"or\":999,\"sn\":0,\"pu\":\"\"},\"link\":{\"sh\":\"外链数据\",\"or\":999,\"sn\":0,\"pu\":\"\"},\"swf\":{\"sh\":\"Flash文件\",\"or\":999,\"sn\":0,\"pu\":\"\"},\"flv\":{\"sh\":\"Flv文件\",\"or\":999,\"sn\":0,\"pu\":\"\"},\"plyr\":{\"sh\":\"plyr\",\"or\":999,\"sn\":0,\"pu\":\"\"},\"H5player\":{\"sh\":\"H5player\",\"or\":999,\"sn\":0,\"pu\":\"\"},\"playerjs\":{\"sh\":\"playerjs\",\"or\":999,\"sn\":0,\"pu\":\"\"},\"aliplayer\":{\"sh\":\"阿里播放器\",\"or\":999,\"sn\":0,\"pu\":\"\"}}");
 
         } catch (JSONException e) {
             SpiderDebug.log(e);
@@ -61,7 +61,7 @@ public class Juhuang extends Spider {
     }
 
     /**
-     * ����headers
+     * 爬虫headers
      *
      * @param refererUrl
      * @return
@@ -76,9 +76,9 @@ public class Juhuang extends Spider {
     }
 
     /**
-     * ��ȡ�������� + ��ҳ���������Ƶ�б�����
+     * 获取分类数据 + 首页最近更新视频列表数据
      *
-     * @param filter �Ƿ���ɸѡ �������� ���������� ��ҳ����Դ���ɸѡ����
+     * @param filter 是否开启筛选 关联的是 软件设置中 首页数据源里的筛选开关
      * @return
      */
     @Override
@@ -86,23 +86,23 @@ public class Juhuang extends Spider {
         try {
             String url = siteUrl + '/';
             Document doc = Jsoup.parse(OkHttpUtil.string(siteUrl, getHeaders(siteUrl)));
-            // ����ڵ�
+            // 分类节点
             Elements elements = doc.select("ul.nav-menu-items > li > a");
             JSONArray classes = new JSONArray();
             for (Element ele : elements) {
-                //������
+                //分类名
                 String name = ele.text();
-                boolean show = name.equals("Youtube��ѡ") ||
-                        name.equals("��Ӱ") ||
-                        name.equals("�缯") ||
-                        name.equals("����") ||
-                        name.equals("����") ||
-                        name.equals("��¼Ƭ");
+                boolean show = name.equals("Youtube精选") ||
+                        name.equals("电影") ||
+                        name.equals("剧集") ||
+                        name.equals("综艺") ||
+                        name.equals("动漫") ||
+                        name.equals("纪录片");
                 if (show) {
                     Matcher mather = regexCategory.matcher(ele.attr("href"));
                     if (!mather.find())
                         continue;
-                    // �ѷ����id������ȡ�����ӵ��б���
+                    // 把分类的id和名称取出来加到列表里
                     String id = mather.group(1).trim();
                     JSONObject jsonObject = new JSONObject();
                     jsonObject.put("type_id", id);
@@ -116,7 +116,7 @@ public class Juhuang extends Spider {
             }
             result.put("class", classes);
             try {
-                // ȡ��ҳ�Ƽ���Ƶ�б�
+                // 取首页推荐视频列表
                 Elements list = doc.select("div.module-items>div");
                 JSONArray videos = new JSONArray();
                 for (int i = 0; i < list.size(); i++) {
@@ -147,12 +147,12 @@ public class Juhuang extends Spider {
     }
 
     /**
-     * ��ȡ������Ϣ����
+     * 获取分类信息数据
      *
-     * @param tid    ����id
-     * @param pg     ҳ��
-     * @param filter ͬhomeContent�����е�filter
-     * @param extend ɸѡ����{k:v, k1:v1}
+     * @param tid    分类id
+     * @param pg     页数
+     * @param filter 同homeContent方法中的filter
+     * @param extend 筛选参数{k:v, k1:v1}
      * @return
      */
     @Override
@@ -162,7 +162,7 @@ public class Juhuang extends Spider {
             if (pg != null && Integer.parseInt(pg) > 1) {
                 url = siteUrl + String.format("/type/%s_type_%s.html", tid, pg);
             }
-            // ��ȡ�������ݵ�url
+            // 获取分类数据的url
 
             String html = OkHttpUtil.string(url, getHeaders(url));
             Document doc = Jsoup.parse(html);
@@ -170,7 +170,7 @@ public class Juhuang extends Spider {
             int pageCount = 1;
             int page = -1;
 //            int page = Integer.parseInt(doc.select("div.module-footer >div[id=page] > span").text().trim());
-            // ȡҳ�������Ϣ
+            // 取页码相关信息
             Elements pageInfo = doc.select("div.module-footer >div[id=page] > a");
             if (pageInfo.size() == 0) {
                 page = Integer.parseInt(pg);
@@ -183,7 +183,7 @@ public class Juhuang extends Spider {
                         continue;
                     String name = a.text();
 
-                    if (name.equals("βҳ")) {
+                    if (name.equals("尾页")) {
                         Matcher matcher = regexPage.matcher(a.attr("href"));
                         if (matcher.find()) {
                             pageCount = Integer.parseInt(matcher.group(1));
@@ -194,8 +194,8 @@ public class Juhuang extends Spider {
             }
 
             JSONArray videos = new JSONArray();
-            if (!html.contains("û���ҵ�����Ҫ�Ľ��Ŷ")) {
-                // ȡ��ǰ����ҳ����Ƶ�б�
+            if (!html.contains("没有找到您想要的结果哦")) {
+                // 取当前分类页的视频列表
                 Elements list = doc.select("div.module-items>div");
                 for (int i = 0; i < list.size(); i++) {
                     Element vod = list.get(i);
@@ -228,22 +228,22 @@ public class Juhuang extends Spider {
     }
 
     /**
-     * ��Ƶ������Ϣ
+     * 视频详情信息
      *
-     * @param ids ��Ƶid
+     * @param ids 视频id
      * @return
      */
     @Override
     public String detailContent(List<String> ids) {
         try {
-            // ��Ƶ����url
+            // 视频详情url
             String url = siteUrl + "/vod/" + ids.get(0) + "_vod.html";
             //System.out.println(url);
             Document doc = Jsoup.parse(OkHttpUtil.string(url, getHeaders(url)));
             JSONObject result = new JSONObject();
             JSONObject vodList = new JSONObject();
 
-            // ȡ��������
+            // 取基本数据
             String cover = doc.selectFirst("div.module-item-pic > img").attr("data-src");
             String title = doc.selectFirst("div.video-info-header > h1.page-title").text();
             String desc = doc.selectFirst("p.zkjj_a").text();
@@ -272,7 +272,7 @@ public class Juhuang extends Spider {
                 }
             });
 
-            // ȡ�����б�����
+            // 取播放列表数据
             Elements modules = doc.select("div.module");
 
 
@@ -315,17 +315,17 @@ public class Juhuang extends Spider {
 
 
     /**
-     * ��ȡ��Ƶ������Ϣ
+     * 获取视频播放信息
      *
-     * @param flag     ����Դ
-     * @param id       ��Ƶid
-     * @param vipFlags ���п�����Ҫvip������Դ
+     * @param flag     播放源
+     * @param id       视频id
+     * @param vipFlags 所有可能需要vip解析的源
      * @return
      */
     @Override
     public String playerContent(String flag, String id, List<String> vipFlags) {
         try {
-            //���岥���õ�headers
+            //定义播放用的headers
             JSONObject headers = new JSONObject();
             headers.put("origin", " https://juhuang.tv");
             headers.put("User-Agent", " Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36");
@@ -335,14 +335,14 @@ public class Juhuang extends Spider {
             headers.put("Referer", " https://juhuang.tv/");
 
 
-            // ����ҳ url
+            // 播放页 url
             String url = siteUrl + "/play/" + id + ".html";
             Document doc = Jsoup.parse(OkHttpUtil.string(url, getHeaders(url)));
             Elements allScript = doc.select("script");
             JSONObject result = new JSONObject();
             for (int i = 0; i < allScript.size(); i++) {
                 String scContent = allScript.get(i).html().trim();
-                if (scContent.startsWith("var player_")) { // ȡֱ��
+                if (scContent.startsWith("var player_")) { // 取直链
                     int start = scContent.indexOf('{');
                     int end = scContent.lastIndexOf('}') + 1;
                     String json = scContent.substring(start, end);
