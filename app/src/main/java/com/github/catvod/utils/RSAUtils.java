@@ -4,6 +4,8 @@ import com.github.catvod.crawler.SpiderDebug;
 import javax.crypto.Cipher;
 import java.io.ByteArrayOutputStream;
 import java.security.*;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -16,7 +18,10 @@ import java.util.Map;
  * 实现RSA加密算法
  */
 public final class RSAUtils {
-
+   /**
+    *字符编码格式
+    */
+    public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
     /**
      * 加密算法RSA
      */
@@ -337,7 +342,7 @@ public final class RSAUtils {
      */
     public static String decryptDataWithPubKey(String data, String PUBLICKEY) throws Exception {
         byte[] rs = decryptBASE64(data);
-        return new String(decryptByPublicKey(rs, PUBLICKEY), StandardCharsets.UTF_8);
+        return new String(decryptByPublicKey(rs, PUBLICKEY), DEFAULT_CHARSET);
     }
 
 
@@ -358,7 +363,7 @@ public final class RSAUtils {
      */
     public static String decryptDataWithPriKey(String data, String PRIVATEKEY) throws Exception {
         byte[] rs = decryptBASE64(data);
-        return new String(decryptByPrivateKey(rs, PRIVATEKEY), StandardCharsets.UTF_8);
+        return new String(decryptByPrivateKey(rs, PRIVATEKEY), DEFAULT_CHARSET);
     }
 
 
