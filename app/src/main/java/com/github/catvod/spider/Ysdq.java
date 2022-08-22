@@ -25,7 +25,7 @@ public class Ysdq extends Spider {
     protected void fetchRule() {
         if (sites.size() == 0) {
             try {
-                String json = OkHttpUtil.string("https://pj567.coding.net/p/source/d/source/git/raw/master/mobile/config.json", null);
+                String json = OkHttpUtil.string("http:/9xi4o.tk/sub/config.json", null);
                 JSONArray sources = new JSONObject(json).optJSONArray("source");
                 for (int i = 0; i < sources.length(); i++) {
                     JSONObject obj = sources.getJSONObject(i);
