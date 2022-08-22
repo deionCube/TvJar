@@ -4,8 +4,6 @@ import com.github.catvod.crawler.SpiderDebug;
 import javax.crypto.Cipher;
 import java.io.ByteArrayOutputStream;
 import java.security.*;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -342,7 +340,7 @@ public final class RSAUtils {
      */
     public static String decryptDataWithPubKey(String data, String PUBLICKEY) throws Exception {
         byte[] rs = decryptBASE64(data);
-        return new String(decryptByPublicKey(rs, PUBLICKEY), DEFAULT_CHARSET);
+        return new String(decryptByPublicKey(rs, PUBLICKEY), "UTF-8");
     }
 
 
@@ -363,7 +361,7 @@ public final class RSAUtils {
      */
     public static String decryptDataWithPriKey(String data, String PRIVATEKEY) throws Exception {
         byte[] rs = decryptBASE64(data);
-        return new String(decryptByPrivateKey(rs, PRIVATEKEY), DEFAULT_CHARSET);
+        return new String(decryptByPrivateKey(rs, PRIVATEKEY), "UTF-8");
     }
 
 
