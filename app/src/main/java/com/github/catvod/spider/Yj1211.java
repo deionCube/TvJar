@@ -19,15 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-
-
-
-
-
-
-
-
-
 public class Yj1211 extends Spider {
 
     @Override
