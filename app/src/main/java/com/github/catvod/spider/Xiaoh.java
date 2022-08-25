@@ -64,7 +64,7 @@ public class Xiaoh extends Spider {
     protected HashMap<String, String> getHeaders(String url) {
         HashMap<String, String> headers = new HashMap<>();
         headers.put("method", "GET");
-        headers.put("Host", siteHost);
+        //headers.put("Host", siteHost);
         headers.put("Upgrade-Insecure-Requests", "1");
         headers.put("DNT", "1");
         headers.put("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36");
