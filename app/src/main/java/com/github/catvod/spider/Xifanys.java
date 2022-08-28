@@ -60,15 +60,13 @@ public class Xifanys extends Spider {
     protected HashMap<String, String> getHeaders(String url) {
         HashMap<String, String> headers = new HashMap<>();
         headers.put("method", "GET");
-        if (!TextUtils.isEmpty(url)) {
-            headers.put("Referer", url);
-        }
+        headers.put("Host", "www.xifanys.com");
         //headers.put("sec-ch-ua-platform","Windows");
-        headers.put("Accept-Encoding", "gzip, deflate, br");
+       // headers.put("Accept-Encoding", "gzip, deflate, br");
         headers.put("Upgrade-Insecure-Requests", "1");
-        headers.put("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36");
-        headers.put("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9");
-        headers.put("Accept-Language", "zh-CN,zh;q=0.9");
+        headers.put("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.114 Safari/537.36");
+        headers.put("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8");
+        headers.put("Accept-Language", "zh-CN,zh;en-US,en;q=0.5");
         return headers;
     }
 
@@ -82,20 +80,28 @@ public class Xifanys extends Spider {
     public String homeContent(boolean filter) {
         try {
             Document doc = Jsoup.parse(OkHttpUtil.string(siteUrl, getHeaders(siteUrl)));
-            // 分类节点
-            Element cateList = doc.select("ul.nav-menu-items").get(0);
-            Elements elements = cateList.select("li > a");
 
+            Elements cateList = doc.select("ul.nav-menu-items > li > s");
+            
+            
             JSONArray classes = new JSONArray();
-            for (Element ele : elements) {
+            for (Element ele : cateList) {
                 //分类名
-                String name = ele.attr("title");
+                //String name = ele.attr("title");
+                String name = ele.text();
+//                System.out.println("dadao: name::" + name);
+//                System.out.println("dadao: ele:::" + ele.attr("href"));
+
                 boolean show = name.equals("电影") ||
                         name.equals("剧集") ||
                         name.equals("综艺") ||
+                        name.equals("纪录")||
                         name.equals("动漫");
+
                 if (show) {
+
                     Matcher mather = regexCategory.matcher(ele.attr("href"));
+                    //System.out.println("dadao: mather" +mather);
                     if (!mather.find())
                         continue;
                     // 把分类的id和名称取出来加到列表里
@@ -214,7 +220,8 @@ public class Xifanys extends Spider {
                 Elements list = doc.select("div.module-items > div.module-item");
                 for (int i = 0; i < list.size(); i++) {
                     Element vod = list.get(i);
-                    String title = vod.selectFirst(".module-item-titlebox a").text();
+                    String title = vod.selectFirst(".module-item-titlebox a").attr("title");
+                            //.text();
                     String cover = vod.selectFirst(".module-item-pic > img").attr("data-src");
                     String remark = vod.selectFirst(".module-item-text").text();
                     Matcher matcher = regexVid.matcher(vod.selectFirst(".module-item-titlebox a").attr("href"));
@@ -251,29 +258,39 @@ public class Xifanys extends Spider {
     @Override
     public String detailContent(List<String> ids) {
         try {
-            // 视频详情url
-            String url = siteUrl + "/yingpiandetail/" + ids.get(0) + ".html";
-            //System.out.println(url);
+            // 视频详情url https://www.xifanys.com/yingpiandetail/beiyiwangdeshiguang.html
+            String url = siteUrl + "yingpiandetail/" + ids.get(0) + ".html";
+           // System.out.println("dadao: "+ url);
             Document doc = Jsoup.parse(OkHttpUtil.string(url, getHeaders(url)));
             JSONObject result = new JSONObject();
             JSONObject vodList = new JSONObject();
 
             // 取基本数据
             String cover = doc.selectFirst("div.video-cover .module-item-pic > img").attr("data-src");
-            String title = doc.selectFirst("div.video-cover .module-item-pic > a").attr("alt");
+            //String title = doc.selectFirst("div.video-cover .module-item-pic > a").attr("alt");
+            String title = doc.selectFirst("div.video-info-header > h1").text();
             String desc = Jsoup.parse(doc.selectFirst("meta[name=description]").attr("content")).text();
-            String category = "", area = "", year = "", remark = "", director = "", actor = "";
+            //System.out.println("dadao: 封面标题简介"+ cover + title );
+            String area = doc.select("div.tag-link > a:nth-child(8)").text();
+            String category = doc.selectFirst(".tag-link").attr("title");
+           // System.out.println("dadao: category"+category);
+            String remark = doc.selectFirst(".tag-link").attr("title");
+
+            String   year = "",  director = "", actor = "";
             Elements span_text_muted = doc.select("div.video-info-main span.video-info-itemtitle");
+            //导演主演等 一个div标签下
             for (int i = 0; i < span_text_muted.size(); i++) {
                 Element text = span_text_muted.get(i);
-                String info = text.text();
-                if (info.equals("分类：")) {
-                    category = text.nextElementSibling().text();
-                } else if (info.equals("上映：")) {
+
+                String info = text.text();//导演： 主演：上映：...
+               // System.out.println("dadao: "+ info);
+
+
+                if (info.equals("上映：")) {
+
                     year = text.nextElementSibling().text();
-                } else if (info.equals("地区：")) {
-                    area = text.nextElementSibling().text();
-                } else if (info.equals("更新：")) {
+
+                }  else if (info.equals("TAG：")) {
                     remark = text.nextElementSibling().text();
                 } else if (info.equals("导演：")) {
                     List<String> directors = new ArrayList<>();
@@ -294,21 +311,23 @@ public class Xifanys extends Spider {
 
             vodList.put("vod_id", ids.get(0));
             vodList.put("vod_name", title);
+            //System.out.println("dadao: vod_name"+ title);
             vodList.put("vod_pic", cover);
-            vodList.put("type_name", category);
+            vodList.put("type_name", category);//
             vodList.put("vod_year", year);
-            vodList.put("vod_area", area);
-            vodList.put("vod_remarks", remark);
+            vodList.put("vod_area", area);//
+            vodList.put("vod_remarks", remark);//
             vodList.put("vod_actor", actor);
             vodList.put("vod_director", director);
             vodList.put("vod_content", desc);
-            //System.out.println(vodList.toString());
+           // System.out.println("dadao: vodList:: "+vodList);
             Map<String, String> vod_play = new TreeMap<>(new Comparator<String>() {
                 @Override
                 public int compare(String o1, String o2) {
                     try {
                         int sort1 = playerConfig.getJSONObject(o1).getInt("or");
                         int sort2 = playerConfig.getJSONObject(o2).getInt("or");
+                       // System.out.println("dadao: sort2 :: "+sort2 );
 
                         if (sort1 == sort2) {
                             return 1;
@@ -321,19 +340,28 @@ public class Xifanys extends Spider {
                 }
             });
 
+
             // 取播放列表数据
+            //播放源名称
             Elements sources = doc.select("div.module-tab-content").get(0).select("div > span");
-            //System.out.println(sources.size());
+            //System.out.println("dadao: sources  "+sources);
+//            System.out.println("dadao: "+sources.size());
+            //所属源播放列表
             Elements sourceList = doc.select("div.module-player-list");
-            //System.out.println(sourceList.size());
+            //System.out.println("dadao: "+sourceList.size());
             for (int i = 0; i < sources.size(); i++) {
+
                 Element source = sources.get(i);
-                //System.out.println(sources.text().split("：")[0].split("』")[1]);
                 String sourceName = source.text();
+//                System.out.println("dadao: -----------------------");
+                //System.out.println("dadao: "+sources.get(0).text());//R播
                 boolean found = false;
+                //System.out.println("dadao::::::"+playerConfig);
                 for (Iterator<String> it = playerConfig.keys(); it.hasNext(); ) {
                     String flag = it.next();
+
                     if (playerConfig.getJSONObject(flag).getString("sh").equals(sourceName)) {
+
                         sourceName = flag;
                         found = true;
                         break;
@@ -342,8 +370,9 @@ public class Xifanys extends Spider {
                 if (!found)
                     continue;
                 String playList = "";
-                Elements playListA = sourceList.get(i).select(".scroll-content > a");
-                //System.out.println(playListA.size());
+                Elements playListA = sourceList.get(i).select("div.scroll-content > a");
+
+//                System.out.println("dadao: "+playListA.size());
                 List<String> vodItems = new ArrayList<>();
 
                 for (int j = 0; j < playListA.size(); j++) {
@@ -352,6 +381,7 @@ public class Xifanys extends Spider {
                     if (!matcher.find())
                         continue;
                     String playURL = matcher.group(1) + "-" + matcher.group(2) + "-" + matcher.group(3);
+                   // System.out.println("dadao:  playURL"+ playURL);
                     vodItems.add(vod.text() + "$" + playURL);
                 }
                 if (vodItems.size() > 0)
@@ -363,6 +393,7 @@ public class Xifanys extends Spider {
                 vod_play.put(sourceName, playList);
             }
 
+
             if (vod_play.size() > 0) {
                 String vod_play_from = TextUtils.join("$$$", vod_play.keySet());
                 String vod_play_url = TextUtils.join("$$$", vod_play.values());
@@ -372,6 +403,7 @@ public class Xifanys extends Spider {
             JSONArray list = new JSONArray();
             list.put(vodList);
             result.put("list", list);
+
             return result.toString();
         } catch (Exception e) {
             SpiderDebug.log(e);
