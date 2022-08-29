@@ -380,8 +380,9 @@ public class Dy555 extends Spider {
             }else{
                 wssurl =wss1;
             }
+
             wssClient(wssurl,wssreqeny);
-            Thread.sleep(3000);
+            Thread.sleep(300);
             String wssrsp=rs;
             String m3u8link = decrypt(wssrsp,key,iv);
             JSONObject m3u8obj= new JSONObject(m3u8link);
@@ -548,15 +549,15 @@ public class Dy555 extends Spider {
                 @Override
                 public void onFailure(WebSocket webSocket, Throwable t, Response response) {
                     super.onFailure(webSocket, t, response);
-
+                    webSocket.close(1000, null);
                 }});
-            TimeUnit.SECONDS.sleep(10);
-            webSocket.close(1000,"null");
+
 
         } catch (Exception exception) {
             SpiderDebug.log(exception);
         }
     }
+
     protected HashMap<String, String> getHeaders2(String url) {
         HashMap<String, String> headers = new HashMap<>();
         headers.put("Origin","https://player.sakurot.com:3458");
