@@ -28,9 +28,15 @@ public class Kunyu77 extends Spider {
 
     private String uAgent = "Dalvik/2.1.0 (Linux; U; Android " + Build.VERSION.RELEASE + "; " + Build.MODEL + " Build/" + Build.ID + ")";
 
-    private HashMap<String, String> getHeaders(String url) {
+     private HashMap<String, String> getHeaders(String url) {
         HashMap<String, String> headers = new HashMap<>();
         headers.put("user-agent", uAgent);
+        String t = String.valueOf(System.currentTimeMillis()/ 1000) ;
+
+        String zuhe=url+t+"XSpeUFjJ";
+        String TK=Misc.MD5(zuhe, Misc.CharsetUTF8);
+        headers.put("TK",TK);
+        headers.put("t",t);
         return headers;
     }
 
@@ -224,8 +230,9 @@ public class Kunyu77 extends Spider {
     @Override
     public String detailContent(List<String> ids) {
         try {
-            String url = siteUrl + "/api.php/provide/videoDetail?ids=" + ids.get(0);
-            String content = OkHttpUtil.string(url, getHeaders(url));
+            String url = siteUrl + "/api.php/provide/videoDetail?ids=" + ids.get(0) + "&version=2.0.4&sj=1661957675;
+            String urlx="/api.php/provide/videoDetail" + ids.get(0);
+            String content = OkHttpUtil.string(url, getHeaders(urlx));
             JSONObject dataObject = new JSONObject(decryptResponse(content));
             JSONObject vObj = dataObject.getJSONObject("data");
             JSONObject result = new JSONObject();
@@ -243,7 +250,7 @@ public class Kunyu77 extends Spider {
             vodAtom.put("vod_director", vObj.getString("director"));
             vodAtom.put("vod_content", vObj.getString("brief").trim());
 
-            url = siteUrl + "/api.php/provide/videoPlaylist?ids=" + ids.get(0);
+            url = siteUrl + "/api.php/provide/videoPlaylist?ids=" + ids.get(0) + "&version=2.0.4&sj=1661957675;
             content = OkHttpUtil.string(url, getHeaders(url));
             JSONArray episodes = new JSONObject(content).getJSONObject("data").getJSONArray("episodes");
             LinkedHashMap<String, ArrayList<String>> playlist = new LinkedHashMap<>();
