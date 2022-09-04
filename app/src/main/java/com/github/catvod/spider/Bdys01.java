@@ -100,15 +100,17 @@ public class Bdys01 extends Spider {
     }
 
 
-    protected String getCookie(){
+    protected void getCookie(){
         cookie="";
         String cookieurl="https://www.bdys01.com/zzzzz";
-        Map<String, List<String>> respHeaders = new HashMap<>();
-        OkHttpUtil.stringNoRedirect(cookieurl, getHeaders(cookieurl,referer), respHeaders);
-        if(respHeaders.containsKey("set-cookie")){
-            cookie = respHeaders.get("set-cookie").get(0).split(";")[0];
+        Map<String, List<String>> cookies = new HashMap<>();
+        OkHttpUtil.string(cookieurl,getHeaders(cookieurl,""),cookies);
+        for( Map.Entry<String, List<String>> entry : cookies.entrySet() ){
+            if(entry.getKey().equals("set-cookie")){
+                cookie = "Tangsan" + TextUtils.join(";",entry.getValue());
+                break;
+            }
         }
-        return cookie;
     }
 
     /**
@@ -120,6 +122,7 @@ public class Bdys01 extends Spider {
     @Override
     public String homeContent(boolean filter) {
         try {
+            getCookie();
             Document doc = Jsoup.parse(OkHttpUtil.string(siteUrl, getHeaders(siteUrl,referer)));
             referer=siteUrl+"/";
             // 分类节点
@@ -161,7 +164,6 @@ public class Bdys01 extends Spider {
             } catch (Exception e) {
                 SpiderDebug.log(e);
             }
-            getCookie();
             return result.toString();
         } catch (Exception e) {
             SpiderDebug.log(e);
@@ -220,37 +222,6 @@ public class Bdys01 extends Spider {
             referer = url;
             Document doc = Jsoup.parse(html);
             JSONObject result = new JSONObject();
-            int pageCount = 0;
-            int page = -1;
-            Elements pageInfo = doc.select("a.page-link");
-            if (pageInfo.size() == 0) {
-                page = Integer.parseInt(pg);
-                pageCount = page;
-            } else {
-                for (int i = 0; i < pageInfo.size(); i++) {
-                    Element a = pageInfo.get(i);
-                    String name = a.text();
-                    if (name.equals("尾页")) {
-                        String gg =a.attr("href");
-                        String hf ="";
-                        if(gg.contains("JSESSIONID")){
-                            int start = gg.lastIndexOf("/")+1;
-                            int end = gg.indexOf(";");
-                            hf =gg.substring(start,end);
-                        }else{
-                            int start = gg.lastIndexOf("/")+1;
-                            int end = gg.indexOf("?");
-                            hf =gg.substring(start,end);
-                        }
-                        if (!hf.isEmpty()) {
-                            pageCount = Integer.parseInt(hf);
-                        } else {
-                            pageCount = 0;
-                        }
-                        break;
-                    }
-                }
-            }
             JSONArray videos = new JSONArray();
             if (!html.contains("没有找到您想要的结果哦")) {
                 // 取当前分类页的视频列表
@@ -276,10 +247,11 @@ public class Bdys01 extends Spider {
                     videos.put(v);
                 }
             }
+            int page =Integer.parseInt(pg);
             result.put("page", page);
-            result.put("pagecount", pageCount);
-            result.put("limit", 48);
-            result.put("total", pageCount <= 1 ? videos.length() : pageCount * 48);
+            result.put("pagecount", videos.length()== 24 ? page + 1 : page);
+            result.put("limit", 24);
+            result.put("total",Integer.MAX_VALUE );
             result.put("list", videos);
             return result.toString();
         } catch (Exception e) {
