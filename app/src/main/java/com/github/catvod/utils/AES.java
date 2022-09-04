@@ -29,6 +29,18 @@ public class AES {
         }
         return null;
     }
+    public static String CBCEncrypt(String src, String KEY, String IV) {
+        try {
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
+            SecretKeySpec keySpec = new SecretKeySpec(KEY.getBytes(), "AES");
+            AlgorithmParameterSpec paramSpec = new IvParameterSpec(IV.getBytes());
+            cipher.init(Cipher.ENCRYPT_MODE, keySpec, paramSpec);
+            return  Base64.encodeToString(cipher.doFinal(src.getBytes()),0);
+        } catch (Exception exception) {
+            SpiderDebug.log(exception);
+        }
+        return null;
+     }
 
 
     public static Cipher GetCipher(int opmode, String key) {
