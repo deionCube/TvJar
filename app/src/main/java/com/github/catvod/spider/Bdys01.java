@@ -50,6 +50,7 @@ public class Bdys01 extends Spider {
     private static final String siteHost = "www.bdys01.com";
     private String cookie="";
     private String referer="";
+    private String rspurl="";
 
     /**
      * 筛选配置
@@ -79,7 +80,11 @@ public class Bdys01 extends Spider {
         if(!ref.equals("google")){
             headers.put("Authority", "www.bdys01.com");
             if(ref.length()>0){
-                headers.put("Referer", ref);
+                if(ref.equals("origin")){
+                    headers.put("Origin", "https://www.bdys01.com");
+                } else {
+                    headers.put("Referer", ref);
+                }
             }
             if(cookie.length()>0){
                 headers.put("Cookie", cookie);
@@ -408,6 +413,74 @@ public class Bdys01 extends Spider {
                 for(int i=0; i< m2.length ;i++){
                     urldblist.add(m2[i].replace("www.bde4.cc","www.bdys01.com"));
                 }
+            }
+            if(urldblist.isEmpty()){
+                rspurl="";
+                t = System.currentTimeMillis();
+                key = Misc.MD5(pid+"-"+t, StandardCharsets.UTF_8).substring(0,16);
+                sg = encrypt(pid+"-"+t,key);
+                geturl = siteUrl+"/god/"+pid;
+                HashMap<String, String> hashMap = new HashMap();
+                hashMap.put("t", Long.toString(t));
+                hashMap.put("sg", sg);
+                hashMap.put("verifyCode", "666");
+                OkHttpUtil.post(OkHttpUtil.defaultClient(), geturl, hashMap,getHeaders(geturl,"origin") ,new OKCallBack.OKCallBackString() {
+                    @Override
+                    protected void onFailure(Call call, Exception exc) {
+                    }
+
+                    public void onResponse(String str) {
+                        try {
+                            JSONObject rspobj = new JSONObject(str);
+                            if(rspobj.isNull("url")){
+                                rspurl="";
+                            }else {
+                                rspurl = rspobj.getString("url");
+                            }
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+                if(rspurl.isEmpty()){
+                    t = System.currentTimeMillis();
+                    key = Misc.MD5(pid+"-"+t, StandardCharsets.UTF_8).substring(0,16);
+                    sg = encrypt(pid+"-"+t,key);
+                    geturl = siteUrl+"/god/"+pid+"?type=1";
+                    HashMap<String, String> hashMap2 = new HashMap();
+                    hashMap2.put("t", Long.toString(t));
+                    hashMap2.put("sg", sg);
+                    hashMap2.put("verifyCode", "888");
+                    OkHttpUtil.post(OkHttpUtil.defaultClient(), geturl, hashMap2,getHeaders(geturl,"origin") ,new OKCallBack.OKCallBackString() {
+                        @Override
+                        protected void onFailure(Call call, Exception exc) {
+                        }
+
+                        public void onResponse(String str) {
+                            try {
+                                rspurl = new JSONObject(str).getString("url");
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    });
+                }
+                String realurl ="";
+                if(rspurl.contains("rkey")){
+                    t = System.currentTimeMillis();
+                    realurl =rspurl.replace("?rkey",t+".mp4?ver=6010&rkey");
+                }else if (rspurl.contains("ixigua")) {
+                    realurl = rspurl;
+                }else{
+                    t = System.currentTimeMillis();
+                    realurl = rspurl.replace("http:","https:") +"/"+t+".mp4";
+                }
+                result.put("parse", 0);
+                result.put("playUrl", "");
+                result.put("url", realurl);
+                result.put("header", "");
+                return result.toString();
             }
             int index =new Random().nextInt(urldblist.size());
             String videourl = urldblist.get(index);
