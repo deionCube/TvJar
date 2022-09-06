@@ -112,7 +112,7 @@ public class Bdys01 extends Spider {
         OkHttpUtil.string(cookieurl,getHeaders(cookieurl,""),cookies);
         for( Map.Entry<String, List<String>> entry : cookies.entrySet() ){
             if(entry.getKey().equals("set-cookie")){
-                cookie = TextUtils.join(";",entry.getValue());
+                cookie = "Messi YYDS Forever 8K ;" + TextUtils.join(";",entry.getValue());
                 break;
             }
         }
