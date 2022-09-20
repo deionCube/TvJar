@@ -2,6 +2,7 @@ package com.github.catvod.spider;
 
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.github.catvod.crawler.Spider;
 import com.github.catvod.crawler.SpiderDebug;
@@ -11,6 +12,7 @@ import com.github.catvod.xpath.XPathRule;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.jsoup.nodes.Element;
 import org.seimicrawler.xpath.JXDocument;
 import org.seimicrawler.xpath.JXNode;
 
@@ -130,7 +132,15 @@ public class XPath extends Spider {
     }
 
     protected String categoryUrl(String tid, String pg, boolean filter, HashMap<String, String> extend) {
-        return rule.getCateUrl().replace("{cateId}", tid).replace("{catePg}", pg);
+        String url = rule.getCateUrl().replace("{cateId}", tid).replace("{catePg}", pg);
+        if(extend!=null) {
+            Set<String> keys = extend.keySet();
+            for (String key : keys) {
+                url = url.replace(String.format("{%s}", key), extend.get(key));
+            }
+        }
+        SpiderDebug.log(String.format("categoryUrl -> url: %s", url));
+        return url;
     }
 
     @Override
