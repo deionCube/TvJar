@@ -330,8 +330,8 @@ public class Bttwoo extends Spider {
             Matcher matcher2 = this.F.matcher(ue.toString());
             Matcher matcher3 = this.Cp.matcher(ue.toString());
             if (matcher.find() && matcher2.find() && matcher3.find()) {
-               // Matcher matcher4 = this.JC.matcher(AES.decryptToString(Base64.decode(matcher.group(1), 0), matcher2.group(1).getBytes(), matcher3.group(1).getBytes(),AES.AES_CBC_PKCS7Padding));
-                Matcher matcher4 = this.JC.matcher(CBC.DECRYPT(Base64.decode(matcher.group(1), 0), matcher2.group(1).getBytes(), matcher3.group(1).getBytes()));
+                Matcher matcher4 = this.JC.matcher(AES.decryptToString(Base64.decode(matcher.group(1), 0), matcher2.group(1).getBytes(), matcher3.group(1).getBytes(),AES.AES_CBC_PKCS7Padding));
+                //Matcher matcher4 = this.JC.matcher(CBC.DECRYPT(Base64.decode(matcher.group(1), 0), matcher2.group(1).getBytes(), matcher3.group(1).getBytes()));
                 if (matcher4.find()) {
                     String group = matcher4.group(1);
                     HashMap hashMap = new HashMap();
