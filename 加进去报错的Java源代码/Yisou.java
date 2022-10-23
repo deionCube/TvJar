@@ -63,7 +63,7 @@ public class Yisou extends Spider {
                 String title = "";
                 Elements titlelist = vod.select("h3.card-title>a>span");
                 for(int k = 0; k < titlelist.size(); k++){
-                    title+=titlelist.get(k).text()
+                    title+=titlelist.get(k).text();
                 }
                 String cover = "";
                 String remark = vod.selectFirst("div.align-items-center>p.text-muted").text();
